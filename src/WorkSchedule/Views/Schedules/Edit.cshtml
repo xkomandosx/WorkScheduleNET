@@ -1,0 +1,131 @@
+﻿@model WorkSchedule.Models.Schedule
+
+@{
+    ViewBag.Title = "Edition";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edition</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.ScheduleId)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PersonId, "Person", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.DropDownList("PersonId", null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.PersonId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DateStart, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DateStart, new { htmlAttributes = new { @class = "form-control date-picker", autocomplete = "off" } })
+                @Html.ValidationMessageFor(model => model.DateStart, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DateEnd, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DateEnd, new { htmlAttributes = new { @class = "form-control date-picker", autocomplete = "off" } })
+                @Html.ValidationMessageFor(model => model.DateEnd, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ScheduleStatus, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ScheduleStatus, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ScheduleStatus, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ScheduleDesc, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ScheduleDesc, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ScheduleDesc, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.WorkplaceId, "Workplace", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.DropDownList("WorkplaceId", null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.WorkplaceId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <div class="checkbox">
+                    <label class="control-label">Uncheck to delete: &nbsp;&nbsp;</label>@Html.EditorFor(model => model.active)
+                    @Html.ValidationMessageFor(model => model.active, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to the list", "Index")
+</div>
+@section scripts
+{
+    <script>
+        var valuePresentInSearchList = false;
+        $(function () {
+
+            $(document).ready(function () {
+                $('.date-picker').datetimepicker();
+
+                //autocomplete ScheduleStatus
+                $('#ScheduleStatus').autocomplete({
+                    source: '/Schedules/GetScheduleStatus',
+                    minLength: 0,
+                    open: function () {
+                        $('#ScheduleStatus').removeClass('input-validation-error');
+                    }
+                }).focus(function () {
+                    $(this).data("uiAutocomplete").search($(this).val());
+                    });
+
+            });
+
+            //autocomplete validation
+            $('#ScheduleStatus').focusout(function () {
+                $.ajax({
+                    url: '/Schedules/GetScheduleStatusAll',
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    data: {},
+                    success: function (data) {
+                        $('#ScheduleStatus').addClass('input-validation-error');
+                        $.each(data, function (i, item) {
+                            if (item.label == $('#ScheduleStatus').val()) {
+                                $('#ScheduleStatus').removeClass('input-validation-error');
+                            }
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
+}

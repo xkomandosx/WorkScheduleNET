@@ -1,0 +1,14 @@
+﻿[
+  {
+    "outputFile": "Content/bootstrap.css",
+    "inputFile": "Content/bootstrap.scss"
+  },
+  {
+    "outputFile": "Content/_bootstrap.css",
+    "inputFile": "Content/_bootstrap.scss"
+  },
+  {
+    "outputFile": "Scripts/pivot/pivot.pl.es5.js",
+    "inputFile": "Scripts/pivot/pivot.pl.js"
+  }
+]

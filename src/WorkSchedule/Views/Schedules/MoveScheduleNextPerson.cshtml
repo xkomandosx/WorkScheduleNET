@@ -1,0 +1,132 @@
+﻿@model WorkSchedule.Models.Schedule
+
+@{
+    ViewBag.Title = "Transferring a schedule from an employee to an employee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Transferring a schedule from an employee to an employee</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <label class="control-label col-md-3" for="PersonId">Person gives schedule</label>
+            <div class="col-md-10">
+                <select class="form-control sumoselect SumoUnder" id="PersonId" multiple="multiple" name="PersonId" tabindex="-1">
+                    @foreach (var group in ViewBag.DictTeam)
+                    {
+                        var toAdd = 0;
+                        foreach (var item in ViewBag.Persons)
+                        {
+                            var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                            if (nameDep == group.Text)
+                            {
+                                toAdd = 1;
+                            }
+                        }
+                        if (toAdd == 1)
+                        {
+                            <optgroup label="@group.Text">
+                                @foreach (var item in ViewBag.Persons)
+                                {
+                                    var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                                    if (nameDep == group.Text)
+                                    {
+                                        <option value="@item.PersonId">@item.FullName</option>
+                                    }
+                                }
+                            </optgroup>
+                        }
+                    }
+                    <!--for null DictTeam-->
+                    @if (1 == 1)
+                    {
+                        var toAdd = 0;
+                        foreach (var item in ViewBag.Persons)
+                        {
+                            var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                            if (nameDep == "")
+                            {
+                                toAdd = 1;
+                            }
+                        }
+                        if (toAdd == 1)
+                        {
+                            <optgroup label="No team">
+                                @foreach (var item in ViewBag.Persons)
+                                {
+                                    var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                                    if (nameDep == "")
+                                    {
+                                        <option value="@item.PersonId">@item.FullName</option>
+                                    }
+                                }
+                            </optgroup>
+                            }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="PersonId2">Person taking schedule</label>
+                    <div class="col-md-10">
+                        @Html.DropDownList("PersonId2", null, htmlAttributes: new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="DateStart">Date range - from:</label>
+                    <div class="col-md-10">
+                        <input autocomplete="off" class="form-control date-picker" data-val="true"
+                               data-val-date="Field Date start must be a date." data-val-required="Field Date start is required."
+                               id="DateStart" name="DateStart" type="datetime" value="">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="DateEnd">Date range - to:</label>
+                    <div class="col-md-10">
+                        <input autocomplete="off" class="form-control date-picker" data-val="true"
+                               data-val-date="Field Date end must be a date." data-val-required="Field Date end is required."
+                               id="DateEnd" name="DateEnd" type="datetime" value="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Save" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+        }
+
+<div>
+    @Html.ActionLink("Back to the list", "Index")
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.sumoselect.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/sumoselect.min.css">
+
+    <script>
+
+        $(document).ready(function () {
+            $('.date-picker').datepicker();
+
+            $('.sumoselect').SumoSelect({
+                placeholder: 'Select...',
+                csvDispCount: 0,
+                search: true,
+                searchText: 'Search...'
+            });
+
+        });
+    </script>
+}

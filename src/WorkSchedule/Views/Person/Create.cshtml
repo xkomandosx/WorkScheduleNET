@@ -1,0 +1,198 @@
+﻿@model WorkSchedule.Models.Person
+
+@{
+    ViewBag.Title = "Create a new";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Create a new</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="form-horizontal">
+    <h4>Employees</h4>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(model => model.Login, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Login, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Login, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Surname, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Surname, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            @Html.ValidationMessageFor(model => model.Surname, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FullName, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-4" for="DictDepartmentID">Department</label>
+        <div class="col-md-10">
+            @Html.DropDownList("DictDepartmentID", null, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.DictDepartmentID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-4" for="DictTeamID">Team</label>
+        <div class="col-md-10">
+            @Html.DropDownListFor(model => model.DictTeamID, null, "", htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.DictTeamID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FormOfEmployment, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FormOfEmployment, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.FormOfEmployment, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.TypeOfEmployment, htmlAttributes: new { @class = "control-label col-md-4" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.TypeOfEmployment, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.TypeOfEmployment, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-4" for="DictJobTitleID">Job title</label>
+        <div class="col-md-10">
+            @Html.DropDownList("DictJobTitleID", null, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.DictJobTitleID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-4" for="DictSkillID">Skill</label>
+        <div class="col-md-10">
+            @Html.DropDownList("DictSkillID", null, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.DictSkillID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-default" />
+        </div>
+    </div>
+</div>
+}
+
+<div>
+    @Html.ActionLink("Back to the list", "Index")
+</div>
+
+@section Scripts {
+@Scripts.Render("~/bundles/jqueryval")
+
+<script>
+    var FormOfEmploymentTags = [
+        "Mother co",
+        "Xyz",
+        "Other"
+    ];
+
+    var TypeOfEmploymentTags = [
+        "0,25",
+        "0,5",
+        "0,75",
+        "1"
+    ];
+
+    $.validator.methods.range = function (value, element, param) {
+        var globalizedValue = value.replace(",", ".");
+        return this.optional(element) || (globalizedValue >= param[0] && globalizedValue <= param[1]);
+    }
+
+    $.validator.methods.number = function (value, element) {
+        return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
+    }
+
+    $('#Login').keyup(function () {
+
+        if (this.value.indexOf('DOMAIN\\') !== 0) {
+
+            this.value = 'DOMAIN\\' + this.value;
+        }
+
+    });
+
+    $('#Login').focusout(function () {
+        $.ajax({
+            url: '/Person/GetUserName',
+            dataType: "json",
+            type: "GET",
+            contentType: 'application/json; charset=utf-8',
+            data: { UserId: this.value},
+            success: function (data) {
+                $('#FullName').val(data.fullName);
+                $('#Name').val(data.name);
+                $('#Surname').val(data.surname);
+
+            }
+        });
+    });
+
+    $(document).ready(function () {
+
+
+        $('#FormOfEmployment').autocomplete({
+            source: FormOfEmploymentTags,
+            minLength: 0,
+            open: function () {
+                $('#FormOfEmployment').removeClass('input-validation-error');
+            },
+            change: function (event, ui) {
+                if (!ui.item) {
+                    $('#FormOfEmployment').addClass('input-validation-error');
+                }
+            }
+        }).focus(function () {
+            $(this).data("uiAutocomplete").search($(this).val());
+        });
+
+        $('#TypeOfEmployment').autocomplete({
+            source: TypeOfEmploymentTags,
+            minLength: 0,
+            open: function () {
+                $('#TypeOfEmployment').removeClass('input-validation-error');
+            },
+            change: function (event, ui) {
+                if (!ui.item) {
+                    $('#TypeOfEmployment').addClass('input-validation-error');
+                }
+            }
+        }).focus(function () {
+            $(this).data("uiAutocomplete").search($(this).val());
+        });
+
+    });
+
+</script>
+}

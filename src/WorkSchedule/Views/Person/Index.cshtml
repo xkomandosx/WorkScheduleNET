@@ -1,0 +1,111 @@
+﻿@model IEnumerable<WorkSchedule.Models.Person>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<div class="panel">
+    <h4>Pracownicy</h4>
+    <p>
+        @Html.ActionLink("Create a new", "Create")
+    </p>
+</div>
+<div class="panel">
+    <table class="table" id="personList">
+        <thead>
+            <tr>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.DictDepartment.Name)
+                </th>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.DictTeam.Name)
+                </th>
+                <th >
+                    @Html.DisplayNameFor(model => model.FormOfEmployment)
+                </th>
+                <th >
+                    @Html.DisplayNameFor(model => model.DictJobTitle.Name)
+                </th>
+                <th >
+                    @Html.DisplayNameFor(model => model.FullName)
+                </th>
+                <th >
+                    @Html.DisplayNameFor(model => model.Login)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.active)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DictDepartment.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DictTeam.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FormOfEmployment)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DictJobTitle.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FullName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Login)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.active)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.PersonId }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.PersonId })
+                </td>
+            </tr>
+    }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@section scripts
+{
+    <script>
+
+        $(document).ready(function () {
+
+            //DataTable implementation
+            $("#personList").DataTable();
+            $('#personList td').css('word-wrap', 'break-word');
+
+        });
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@model IEnumerable<WorkSchedule.Models.DictDepartment>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="panel">
+    <h4>Departamenty</h4>
+    <p>
+        @Html.ActionLink("Create a new", "Create")
+    </p>
+</div>
+<div class="panel">
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DictDepartmentForeignID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DictDepartmentForeignID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.DictDepartmentID }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.DictDepartmentID })
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
+
+@Html.Raw(@ViewBag.Message)

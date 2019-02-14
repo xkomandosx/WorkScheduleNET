@@ -1,0 +1,98 @@
+﻿@model WorkSchedule.Models.Person
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DictDepartment.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DictDepartment.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Surname)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Surname)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FullName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FullName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Login)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Login)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FormOfEmployment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FormOfEmployment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TypeOfEmployment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TypeOfEmployment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DictJobTitle.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DictJobTitle.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DictSkill.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DictSkill.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.active)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.active)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.PersonId }) |
+    @Html.ActionLink("Back to the list", "Index")
+</p>

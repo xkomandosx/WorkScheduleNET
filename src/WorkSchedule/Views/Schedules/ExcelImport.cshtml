@@ -1,0 +1,45 @@
+﻿@model IEnumerable<WorkSchedule.Models.Schedule>
+
+@{
+    /**/
+
+    ViewBag.Title = "ExcelImport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Grafik - Mass import</h2>
+
+
+
+@using (Html.BeginForm("UploadExcel", "Schedules", FormMethod.Post, new { enctype = "multipart/form-data", onsubmit = "return myFunction()" }))
+{
+    <div class="form-horizontal">
+        <div class="form-group">
+            <div class="control-label col-md-12">
+                Download the file template for mass import:
+                <a href="/Schedules/DownloadExcel/"><img src="~/Doc/excel.ico" width="30" height="30" title="Download the template" alt="excel" /></a>
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <div class="control-label col-md-2">Import:</div>
+            <div class="col-md-10">
+                <input type="file" id="FileUpload" name="FileUpload" class="" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Send" id="btnSubmit" class="btn btn-primary" />
+
+            </div>
+        </div>
+    </div>
+}
+<div>
+    @Html.ActionLink("Back to the list", "Index")
+</div>
+@Html.Raw(@ViewBag.Message)
+

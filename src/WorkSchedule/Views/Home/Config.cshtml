@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "Konfiguracja";
+}
+<h2>@ViewBag.Title.</h2>
+
+<div class="list-group">
+    @Html.ActionLink("Pracownicy", "Index", "Person", null, new { @class = "list-group-item list-group-item-action" })
+    @Html.ActionLink("Departamenty", "Index", "DictDepartments", null, new { @class = "list-group-item list-group-item-action" })
+    @Html.ActionLink("Zespoły", "Index", "DictTeams", null, new { @class = "list-group-item list-group-item-action" })
+    @Html.ActionLink("Dni wolne", "Index", "DictDaysOffs", null, new { @class = "list-group-item list-group-item-action" })
+</div>

@@ -1,0 +1,221 @@
+﻿@model WorkSchedule.Models.ReportSaved
+
+<h3>Raporty</h3>
+<div class="panel">
+    @Html.DropDownList("ReportSavedId", null, "Load saved report ...", htmlAttributes: new { @class = "form-control" })
+</div>
+<div class="panel">
+    <div id="output" style="margin: 10px;"></div>
+</div>
+@using (Html.BeginForm("Create", "Report", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="panel">
+        <div class="row vcenter">
+            <div class="col-md-3">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Enter the name of the view ..." } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+            <div class="col-md-4">
+                @Html.HiddenFor(model => model.State)
+                <input type="submit" value="Save current view" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    <script src="~/Scripts/d3/d3.min.js" charset="utf-8"></script>
+    <script src="~/Scripts/c3.js" charset="utf-8"></script>
+    <script src="~/Scripts/jquery-ui-touch-punch.js"></script>
+    <script src="~/Scripts/jquery.cookie-1.4.1.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="~/Scripts/pivot/pivot.css">
+    <link rel="stylesheet" type="text/css" href="~/Content/c3.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Scripts/pivot/subtotal.css" />
+    <style>
+        body {
+            font-family: Verdana;
+        }
+
+        .node {
+            border: solid 1px white;
+            font: 10px sans-serif;
+            line-height: 12px;
+            overflow: hidden;
+            position: absolute;
+            text-indent: 2px;
+        }
+    </style>
+    <script type="text/javascript" src="~/Scripts/pivot/pivot.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/pivot/export_renderers.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/pivot/d3_renderers.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/pivot/c3_renderers.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/pivot/subtotal.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/pivot/pivot.pl.js"></script>
+
+    <script>
+
+        var derivers = $.pivotUtilities.derivers;
+        var renderers = $.extend(
+            $.pivotUtilities.subtotal_renderers,
+            $.pivotUtilities.renderers,
+            $.pivotUtilities.c3_renderers,
+            $.pivotUtilities.d3_renderers,
+            $.pivotUtilities.export_renderers
+        );
+        var dataClass = $.pivotUtilities.SubtotalPivotData;
+
+        $(document).ready(function () {
+
+            var x = document.getElementById("ReportSavedId");
+
+            for (i = 0; i < x.options.length; i++) {
+                if (x.options[i].text.indexOf('|') > -1) {
+                    x.options[i].text = x.options[i].text.substring(1);
+                    x.options[i].style.backgroundColor = "#EEE";
+                }
+            }
+
+            var config = localStorage.getItem('pivotdatakey');
+
+            if (config) { // If a saved state found in LocalStorage, then load it
+                var configobject = JSON.parse(config); // Make it an object
+                configobject.onRefresh = saveState; // Add callback function for onRefresh
+                configobject.renderers = renderers;
+                configobject.dataClass = dataClass;
+                $.ajax({
+                    url: '/Schedules/GetDiaryEventsReport',
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    data: {},
+                    success: function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            data[i].HoursOfWork = moment(data[i].DateStart).format('HH:mm') + ' - ' + moment(data[i].DateEnd).format('HH:mm');
+                            data[i]['Date Start'] = moment(data[i].DateStart).format('YYYY-MM-DD');
+                            data[i]['Date End'] = moment(data[i].DateEnd).format('YYYY-MM-DD');
+                            data[i].IsFullDay = data[i].IsFullDay == true ? 'yes' : 'no';
+                            data[i]['Start Time'] = moment(data[i].StartTime).format('HH:mm');
+                            data[i]['Job title'] = data[i].JobTitle;
+                            data[i]['Form of employment'] = data[i].FormOfEmployment;
+                            data[i]['Type of employment'] = data[i].TypeOfEmployment;
+                            data[i]['Schedule Status'] = data[i].ScheduleStatus;
+                            delete data[i].FormOfEmployment;
+                            delete data[i].TypeOfEmployment;
+                            delete data[i].ScheduleStatus;
+                            delete data[i].StartTime;
+                            delete data[i].DateStart;
+                            delete data[i].DateEnd;
+                        }
+                        $("#output").pivotUI( // Load with saved state
+                            data, configobject,
+                            true
+                        );
+                    }
+                });
+
+            } else { // State not found in LocalStorage. So create without a saved state
+                $.ajax({
+                    url: '/Schedules/GetDiaryEventsReport',
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    data: {},
+                    success: function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            data[i].HoursOfWork = moment(data[i].DateStart).format('HH:mm') + ' - ' + moment(data[i].DateEnd).format('HH:mm');
+                            data[i]['Date Start'] = moment(data[i].DateStart).format('YYYY-MM-DD');
+                            data[i]['Date End'] = moment(data[i].DateEnd).format('YYYY-MM-DD');
+                            data[i].IsFullDay = data[i].IsFullDay == true ? 'yes' : 'no';
+                            data[i]['Start Time'] = moment(data[i].StartTime).format('HH:mm');
+                            data[i]['Job title'] = data[i].JobTitle;
+                            data[i]['Form of employment'] = data[i].FormOfEmployment;
+                            data[i]['Type of employment'] = data[i].TypeOfEmployment;
+                            data[i]['Schedule Status'] = data[i].ScheduleStatus;
+                            delete data[i].FormOfEmployment;
+                            delete data[i].TypeOfEmployment;
+                            delete data[i].ScheduleStatus;
+                            delete data[i].StartTime;
+                            delete data[i].DateStart;
+                            delete data[i].DateEnd;
+                        }
+                        $("#output").pivotUI(
+                            data,
+                            {
+                                dataClass: dataClass,
+                                renderers: renderers,
+                                rows: ["Department", "Team"],
+                                cols: ["Schedule Status"],
+                                aggregatorName: "Sum",
+                                vals: ["HoursOfWork"],
+                                rendererOptions: {
+                                    arrowCollapsed: "[+] ",
+                                    arrowExpanded: "[-] ",
+                                    collapseRowsAt: 0,
+                                    rowSubtotalDisplay: {
+                                        hideOnExpand: true
+                                    },
+                                    colSubtotalDisplay: {
+                                        hideOnExpand: true
+                                    }
+                                },
+                                onRefresh: saveState
+                            },
+                            false
+                        );
+                    }
+                });
+
+            }
+        });
+
+        // This function stores PivotTable config to LocalStorage.
+        function saveState(config) {
+            var config_copy = JSON.parse(JSON.stringify(config));
+            delete config_copy["aggregators"];
+            localStorage.setItem('pivotdatakey', JSON.stringify(config_copy, undefined, 2));
+            $("#State").text(JSON.stringify(config_copy, undefined, 2));
+            $("#State").val(JSON.stringify(config_copy, undefined, 2));
+        }
+
+        $("#ReportSavedId").change(function () {
+
+            var configobject = JSON.parse($("#ReportSavedId").val()); // Make it an object
+            configobject.onRefresh = saveState; // Add callback function for onRefresh
+            configobject.renderers = renderers;
+            configobject.dataClass = dataClass;
+            $.ajax({
+                url: '/Schedules/GetDiaryEventsReport',
+                dataType: "json",
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                data: {},
+                success: function (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        data[i].HoursOfWork = moment(data[i].DateStart).format('HH:mm') + ' - ' + moment(data[i].DateEnd).format('HH:mm');
+                        data[i]['Date Start'] = moment(data[i].DateStart).format('YYYY-MM-DD');
+                        data[i]['Date End'] = moment(data[i].DateEnd).format('YYYY-MM-DD');
+                        data[i].IsFullDay = data[i].IsFullDay == true ? 'yes' : 'no';
+                        data[i]['Start Time'] = moment(data[i].StartTime).format('HH:mm');
+                        data[i]['Job title'] = data[i].JobTitle;
+                        data[i]['Form of employment'] = data[i].FormOfEmployment;
+                        data[i]['Type of employment'] = data[i].TypeOfEmployment;
+                        data[i]['Schedule Status'] = data[i].ScheduleStatus;
+                        delete data[i].FormOfEmployment;
+                        delete data[i].TypeOfEmployment;
+                        delete data[i].ScheduleStatus;
+                        delete data[i].StartTime;
+                        delete data[i].DateStart;
+                        delete data[i].DateEnd;
+                    }
+                    $("#output").pivotUI( // Load with saved state
+                        data, configobject,
+                        true
+                    );
+                }
+            });
+        });
+    </script>
+}

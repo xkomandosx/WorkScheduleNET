@@ -1,0 +1,202 @@
+﻿@model WorkSchedule.Models.Schedule
+
+@{
+    ViewBag.Title = "Create a new";
+
+}
+
+<h2>Create a new</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.PersonId, "Person", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+
+                <select class="form-control sumoselect SumoUnder" id="PersonId" multiple="multiple" name="PersonId" tabindex="-1">
+                    @foreach (var group in ViewBag.DictTeam)
+                    {
+                        var toAdd = 0;
+                        foreach (var item in ViewBag.Persons)
+                        {
+                            var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                            if (nameDep == group.Text)
+                            {
+                                toAdd = 1;
+                            }
+                        }
+                        if (toAdd == 1)
+                        {
+                            <optgroup label="@group.Text">
+                                @foreach (var item in ViewBag.Persons)
+                                {
+                                    var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                                    if (nameDep == group.Text)
+                                    {
+                                        <option value="@item.PersonId">@item.FullName</option>
+                                    }
+                                }
+                            </optgroup>
+                        }
+                    }
+                    <!--for null DictTeam-->
+                    @if (1 == 1)
+                    {
+                        var toAdd = 0;
+                        foreach (var item in ViewBag.Persons)
+                        {
+                            var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                            if (nameDep == "")
+                            {
+                                toAdd = 1;
+                            }
+                        }
+                        if (toAdd == 1)
+                        {
+                            <optgroup label="No team">
+                                @foreach (var item in ViewBag.Persons)
+                                {
+                                    var nameDep = (item.DictTeam == null) ? "" : Convert.ToString(item.DictTeam.Name);
+                                    if (nameDep == "")
+                                    {
+                                        <option value="@item.PersonId">@item.FullName</option>
+                                    }
+                                }
+                            </optgroup>
+                        }
+                    }
+
+                </select>
+
+                @Html.ValidationMessageFor(model => model.PersonId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DateStart, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DateStart, new { htmlAttributes = new { @class = "form-control date-picker", autocomplete = "off" } })
+                @Html.ValidationMessageFor(model => model.DateStart, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DateEnd, htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DateEnd, new { htmlAttributes = new { @class = "form-control date-picker", autocomplete = "off" } })
+                @Html.ValidationMessageFor(model => model.DateEnd, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <!-- Recurrence section -->
+            <label class="control-label col-md-4" for="repeat">Frequency:</label>
+            <div class="col-md-10">
+                <select class="form-control" name="repeat" id="repeat">
+                    <option value="norepeat">No repeat</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                <div id="select_norepeat" style="display:none">
+                </div>
+
+                <div id="select_daily" style="display:none">
+                    <label>Repeat by <input name="daily_every" id="daily_every" style="width: 20px;" value="1" /> days. </label>
+                </div>
+
+                <div id="select_weekly" style="display:none">
+                    Repeat by <input name="weekly_every" id="weekly_every" style="width: 20px;" value="1" /> weeks.
+                    <br />
+                    <table>
+                        <tr>
+                            <td><label>W dni: </label></td>
+                            <td><label for="weekly_1"><input type="checkbox" name="weekly_1" id="weekly_1" checked="checked" />Mon</label></td>
+                            <td><label for="weekly_2"><input type="checkbox" name="weekly_2" id="weekly_2" checked="checked" />Tue</label></td>
+                            <td><label for="weekly_3"><input type="checkbox" name="weekly_3" id="weekly_3" checked="checked" />Wed</label></td>
+                            <td><label for="weekly_4"><input type="checkbox" name="weekly_4" id="weekly_4" checked="checked" />Thu</label></td>
+                            <td><label for="weekly_5"><input type="checkbox" name="weekly_5" id="weekly_5" checked="checked" />Fri</label></td>
+                            <td><label for="weekly_6"><input type="checkbox" name="weekly_6" id="weekly_6" />Sat</label></td>
+                            <td><label for="weekly_7"><input type="checkbox" name="weekly_7" id="weekly_7" />Sun</label></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div id="select_monthly" style="display:none">
+                    Repeat by <input name="monthly_every" id="monthly_every" style="width: 20px;" value="1" /> months. In days:
+                    <br />
+                    <label for="monthly_1"><input type="checkbox" name="monthly_1" id="monthly_1" />1</label>
+                    <label for="monthly_2"><input type="checkbox" name="monthly_2" id="monthly_2" />2</label>
+                    <label for="monthly_3"><input type="checkbox" name="monthly_3" id="monthly_3" />3</label>
+                    <label for="monthly_4"><input type="checkbox" name="monthly_4" id="monthly_4" />4</label>
+                    <label for="monthly_5"><input type="checkbox" name="monthly_5" id="monthly_5" />5</label>
+                    <label for="monthly_6"><input type="checkbox" name="monthly_6" id="monthly_6" />6</label>
+                    <label for="monthly_7"><input type="checkbox" name="monthly_7" id="monthly_7" />7</label>
+                    <label for="monthly_8"><input type="checkbox" name="monthly_8" id="monthly_8" />8</label>
+                    <label for="monthly_9"><input type="checkbox" name="monthly_9" id="monthly_9" />9</label>
+                    <label for="monthly_10"><input type="checkbox" name="monthly_10" id="monthly_10" />10</label>
+                    <label for="monthly_11"><input type="checkbox" name="monthly_11" id="monthly_11" />11</label>
+                    <label for="monthly_12"><input type="checkbox" name="monthly_12" id="monthly_12" />12</label>
+                    <label for="monthly_13"><input type="checkbox" name="monthly_13" id="monthly_13" />13</label>
+                    <label for="monthly_14"><input type="checkbox" name="monthly_14" id="monthly_14" />14</label>
+                    <label for="monthly_15"><input type="checkbox" name="monthly_15" id="monthly_15" />15</label>
+                    <label for="monthly_16"><input type="checkbox" name="monthly_16" id="monthly_16" />16</label>
+                    <label for="monthly_17"><input type="checkbox" name="monthly_17" id="monthly_17" />17</label>
+                    <label for="monthly_18"><input type="checkbox" name="monthly_18" id="monthly_18" />18</label>
+                    <label for="monthly_19"><input type="checkbox" name="monthly_19" id="monthly_19" />19</label>
+                    <label for="monthly_20"><input type="checkbox" name="monthly_20" id="monthly_20" />20</label>
+                    <label for="monthly_21"><input type="checkbox" name="monthly_21" id="monthly_21" />21</label>
+                    <label for="monthly_22"><input type="checkbox" name="monthly_22" id="monthly_22" />22</label>
+                    <label for="monthly_23"><input type="checkbox" name="monthly_23" id="monthly_23" />23</label>
+                    <label for="monthly_24"><input type="checkbox" name="monthly_24" id="monthly_24" />24</label>
+                    <label for="monthly_25"><input type="checkbox" name="monthly_25" id="monthly_25" />25</label>
+                    <label for="monthly_26"><input type="checkbox" name="monthly_26" id="monthly_26" />26</label>
+                    <label for="monthly_27"><input type="checkbox" name="monthly_27" id="monthly_27" />27</label>
+                    <label for="monthly_28"><input type="checkbox" name="monthly_28" id="monthly_28" />28</label>
+                    <label for="monthly_29"><input type="checkbox" name="monthly_29" id="monthly_29" />29</label>
+                    <label for="monthly_30"><input type="checkbox" name="monthly_30" id="monthly_30" />30</label>
+                    <label for="monthly_31"><input type="checkbox" name="monthly_31" id="monthly_31" />31</label>
+                </div>
+            </div>
+
+            <div class="form-group" id="divScheduleStatus">
+                @Html.LabelFor(model => model.ScheduleStatus, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ScheduleStatus, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ScheduleStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group" id="divScheduleDesc">
+                @Html.LabelFor(model => model.ScheduleDesc, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ScheduleDesc, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ScheduleDesc, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.WorkplaceId, "Stanowisko pracy", htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-10">
+                    @Html.DropDownList("WorkplaceId", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.WorkplaceId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            @Html.HiddenFor(model => model.active, new { Value = true })
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    </div>
+}

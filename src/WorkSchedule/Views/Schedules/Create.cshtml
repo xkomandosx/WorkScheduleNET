@@ -1,0 +1,90 @@
+﻿@model WorkSchedule.Models.Schedule
+
+@{
+                /**/
+
+                ViewBag.Title = "Create a new";
+                Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    Html.RenderPartial("_CreateBody");
+}
+
+<div>
+    @Html.ActionLink("Back to the list", "Index")
+</div>
+
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.sumoselect.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/sumoselect.min.css">
+
+    <script>
+
+        var valuePresentInSearchList = false;
+
+        $(function () {
+
+            $(document).ready(function () {
+                $('.date-picker').datetimepicker();
+
+                $('.sumoselect').SumoSelect({
+                    placeholder: 'Select...',
+                    csvDispCount: 0,
+                    search: true,
+                    searchText: 'Search...'
+                });
+
+                //autocomplete ScheduleStatus
+                $('#ScheduleStatus').autocomplete({
+                    source: '/Schedules/GetScheduleStatus',
+                    minLength: 0,
+                    open: function () {
+                        $('#ScheduleStatus').removeClass('input-validation-error');
+                    }
+                }).focus(function () {
+                    $(this).data("uiAutocomplete").search($(this).val());
+                });
+
+            });
+
+            //autocomplete validation
+            $('#ScheduleStatus').focusout(function () {
+                $.ajax({
+                    url: '/Schedules/GetScheduleStatusAll',
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    data: {},
+                    success: function (data) {
+                        $('#ScheduleStatus').addClass('input-validation-error');
+                        $.each(data, function (i, item) {
+                            if (item.label == $('#ScheduleStatus').val()) {
+                                $('#ScheduleStatus').removeClass('input-validation-error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            $("#repeat").change(function () {
+
+                divs = ["#select_norepeat", "#select_daily", "#select_weekly", "#select_monthly", "#select_annually"];
+
+                var id = "#select_" + this.value;
+                if (!id) { id = "select_norepeat"; }
+
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i] === id) {
+                        $(divs[i]).show();
+                    }
+                    else {
+                        $(divs[i]).hide();
+                    }
+                }
+            });
+        });
+    </script>
+}

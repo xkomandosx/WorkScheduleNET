@@ -1,0 +1,316 @@
+﻿@model IEnumerable<WorkSchedule.Models.Schedule>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Work Schedule - Calendar view</h2>
+
+<div class="panel">
+    <div class="row vcenter">
+        <div class="col-md-5">
+            <p>@Html.ActionLink("Create a new", "Create")</p>
+        </div>
+        <div class="col-md-5">
+            <p>@Html.ActionLink("Mass import", "ExcelImport")</p>
+        </div>
+        <div class="col-md-2">
+            <p>@Html.ActionLink("Table view", "Table")</p>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <table class="table" id="scheduleList">
+        <thead>
+            <tr>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.Person.FullName)
+                </th>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.Person.DictTeam.Name)
+                </th>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.DateStart)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateEnd)
+                </th>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.ScheduleStatus)
+                </th>
+                <th class="select-filter">
+                    @Html.DisplayNameFor(model => model.Person.FormOfEmployment)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Person.FullName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Person.DictTeam.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateStart)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateEnd)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ScheduleStatus)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Person.FormOfEmployment)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.ScheduleId }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.ScheduleId })
+                </td>
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div class="panel">
+    <div id="calendar"></div>
+</div>
+<div class="panel">
+    <div class="row vcenter">
+        <div class="col-md-5">
+            <p>@Html.ActionLink("Transferring a schedule from an employee to an employee", "MoveScheduleNextPerson")</p>
+        </div>
+        <div class="col-md-5">
+            <p></p>
+        </div>
+        <div class="col-md-2">
+            <p></p>
+        </div>
+    </div>
+</div>
+<div id="calendarModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modalTitle" class="modal-title"></h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span> <span class="sr-only">close</span></button>
+            </div>
+            <div id="modalBody" class="modal-body">
+ 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+<script>
+
+        //custom filters for timekey - DataTables
+        $.fn.dataTableExt.afnFiltering.push(
+            function (oSettings, aData, iDataIndex) {
+                var table = $("#scheduleList").DataTable();
+                var dataRange_from = moment(aData[2]);
+                var dataRange_to = moment(aData[3]);
+                if (document.getElementById('tblFooter_Date start') == null) {
+                    var dataSelected = moment();
+                }
+                else {
+                    var userchoice = document.getElementById('tblFooter_Date start').value;
+                    var dataSelected = moment([parseInt(userchoice.substring(4, 0)), parseInt(userchoice.substring(5, 7)) - 1, 1]);
+                }
+
+                if (dataRange_from === "" || dataRange_to === "" || userchoice === "") {
+                    return true;
+                } else if (dataRange_from <= dataSelected && dataSelected <= dataRange_to) {
+                    return true;
+                } else if (dataRange_from.month() == dataSelected.month() && dataRange_from.year() == dataSelected.year()) {
+                    return true;
+                } else if (dataRange_to.month() == dataSelected.month() && dataRange_to.year() == dataSelected.year()) {
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        $(document).ready(function () {
+
+            //DataTable implementation
+            $("#scheduleList").DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'csv', text: 'Export csv' }, { extend: 'excel', text: 'Export excel' }, 'pdf'
+                ],
+                paging: true,
+                deferRender: true,
+                //stateSave: true,
+                //stateLoaded: function (settings, data) {
+
+                //    for (var i = 0; i < data.columns.length; i++) {
+                //        alert(data.columns[i].search.search);
+                //    }
+                //
+                //},
+                initComplete: function () {
+                    var table = $("#scheduleList").DataTable();
+                    this.api().columns('.select-filter').every(function () {
+                        var column = this;
+                        var timeKeyArr = [];
+                        var select = $('<select id="tblFooter_' + column.header().innerText.trim() + '"><option value=""></option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $(this).val();
+                                if (column.header().innerText == 'Date start') {
+                                    table.draw();
+                                }
+                                else {
+                                    column
+                                        .search(val)
+                                        .draw();
+                                }
+
+                            });
+                        //filters
+                        column.data().unique().sort().each(function (d, j) {
+                            if (moment(d, 'YYYY-MM-DD HH:mm', true).isValid()) {
+                                var timekey = moment(d).format('YYYY-MM');
+                                if (timeKeyArr.indexOf(timekey) < 0) {
+                                    timeKeyArr.push(timekey);
+                                    select.append('<option value="' + timekey + '">' + timekey + '</option>')
+                                }
+                            }
+                            else {
+                                select.append('<option value="' + d + '">' + d + '</option>')
+                            }
+
+                        });
+
+                        
+                        // filters for start - on page load
+                        if (document.getElementById('tblFooter_Date start') != null) {
+                            document.getElementById('tblFooter_Date start').value = moment().format('YYYY-MM');
+                            document.getElementById('tblFooter_FullName').value = '@Session["UserFullName"].ToString()';
+                            var countUserRows = table.column(0).data()
+                            .filter(function (value, index) {
+                                return value == '@Session["UserFullName"].ToString()' ? true : false;
+                            }).count();
+                            if (countUserRows > 0) {
+                                table.column(0).search('@Session["UserFullName"].ToString()').draw();
+                            }
+                            else {
+                                table.draw();
+                            }
+
+                        }
+                    });
+                }
+            });
+
+
+            //generate FullCalendar
+            $('#calendar').fullCalendar($.extend({
+                editable: true,
+                firstDay: 1,
+                allDayText: 'All Day:',
+                weekends: false,
+                header: {
+                    left: 'title',
+                    right: 'prev,next today,agendaDay,agendaWeek,month'
+                },
+                defaultView: 'agendaWeek',
+                minTime: "06:00:00",
+                maxTime: "22:00:00",
+                height: 'auto',
+                eventLimit: true,
+                views: {
+                    agenda: {
+                        eventLimit: true // adjust to 2 only for agendaWeek/agendaDay
+                    },
+                    month: {
+                        weekends: true
+                    }
+                },
+                eventLimitText: "more",
+                weekNumbers: true,
+                editable: true,
+                droppable: false,
+                slotMinutes: 15,
+                slotEventOverlap: false,
+                eventDurationEditable: false,
+                slotLabelFormat: 'H:mm',
+                timeFormat: 'H:mm',
+                nowIndicator: true,
+                timezone: 'local',
+                eventClick: function (event, jsEvent, view) {
+                    var description = (!event.description || event.description == "null") ? "" : event.description;
+                    var note = (!event.note || event.note == "null") ? "" : event.note;
+                    $('#modalTitle').html(event.title);
+                    $('#modalBody').html('Data: ' + moment(event.start).format("YYYY-MM-DD HH:mm")
+                        + ' - ' + moment(event.end).format("YYYY-MM-DD HH:mm")
+                        + '<br><br>Status: ' + description
+                        + '<br><br>Note: ' + note
+                        + '<br><br><a href="/Schedules/Edit/' + event.id + '">Edit</a>');
+                    $('#eventUrl').attr('href', event.url);
+                    $('#calendarModal').modal('show');
+                },
+
+                events: '/Schedules/GetDiaryEvents/',
+            }));
+
+            // adding DaysOffs to FullCalendar
+            $.ajax({
+                url: '/Schedules/GetDaysOffs',
+                dataType: "json",
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                data: {},
+                success: function (data) {
+                    var events = data.map(function (x) {
+                        x.title = 'DateOff';
+                        x.start = moment(x.DateDayOff).format('YYYY-MM-DD');
+                        x.rendering = 'background';
+                        x.backgroundColor = '#FFF2F2';
+                        return x;
+                    });
+                    $('#calendar').fullCalendar('addEventSource', events);
+                }
+            });
+
+            $('#calendar').fullCalendar('option', {
+                eventRender: function (event, element, view) {
+                    if (event.title == 'DateOff') {
+                        var dateString = event.start.format("YYYY-MM-DD");
+                        $(view.el[0]).find('.fc-day[data-date=' + dateString + ']').css('background-color', '#FFF2F2');
+
+                    }
+                }
+            });
+
+        });
+</script>
+}

@@ -1,0 +1,206 @@
+.container {
+    margin-right: 0;
+    margin-left: 0;
+    max-width: 100%;
+}
+
+.pvtUi {
+    color: #333;
+}
+
+button {
+    display: inline-block;
+    font-weight: 300;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    margin: 0.1rem 0.375rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+}
+
+table.pvtTable {
+    font-size: 8pt;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+    table.pvtTable thead tr th, table.pvtTable tbody tr th {
+        background-color: #e6EEEE;
+        border: 1px solid #CDCDCD;
+        font-size: 8pt;
+        padding: 3px;
+    }
+
+    table.pvtTable .pvtColLabel {
+        text-align: center;
+    }
+
+    table.pvtTable .pvtTotalLabel {
+        text-align: right;
+    }
+
+    table.pvtTable tbody tr td {
+        color: #3D3D3D;
+        padding: 3px;
+        background-color: #FFF;
+        border: 1px solid #CDCDCD;
+        text-align: right;
+    }
+
+.pvtTotal, .pvtGrandTotal {
+    font-weight: bold;
+}
+
+.pvtVals {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pvtRowOrder, .pvtColOrder {
+    cursor: pointer;
+    width: 15px;
+    margin-left: 5px;
+    display: inline-block;
+}
+
+.pvtAggregator {
+    margin-bottom: 5px;
+    max-width: 130px;
+}
+
+.pvtAxisContainer, .pvtVals {
+    border: 1px solid gray;
+    background: #EEE;
+    padding: 3px;
+    min-width: 20px;
+    min-height: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -ms-user-select: none;
+}
+
+    .pvtAxisContainer li {
+        padding: 6px 4px;
+        list-style-type: none;
+        cursor: move;
+    }
+
+        .pvtAxisContainer li.pvtPlaceholder {
+            -webkit-border-radius: 5px;
+            padding: 3px 15px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            border: 1px dashed #aaa;
+        }
+
+        .pvtAxisContainer li span.pvtAttr {
+            -webkit-text-size-adjust: 100%;
+            background: #F3F3F3;
+            border: 1px solid #DEDEDE;
+            font-size: 0.8rem;
+            padding: 2px 2px;
+            white-space: nowrap;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+        }
+
+.pvtTriangle {
+    cursor: pointer;
+    color: grey;
+}
+
+.pvtHorizList li {
+    display: inline;
+}
+
+.pvtFilteredAttribute {
+    font-style: italic
+}
+
+.pvtFilterBox {
+    z-index: 100;
+    width: 300px;
+    border: 1px solid gray;
+    background-color: #fff;
+    position: absolute;
+    text-align: center;
+}
+
+    .pvtFilterBox h4 {
+        margin: 15px;
+    }
+
+    .pvtFilterBox p {
+        margin: 10px auto;
+    }
+
+    .pvtFilterBox label {
+        font-weight: normal;
+    }
+
+    .pvtFilterBox input[type='checkbox'] {
+        margin-right: 10px;
+        margin-left: 10px;
+    }
+
+    .pvtFilterBox input[type='text'] {
+        width: 230px;
+    }
+
+    .pvtFilterBox .count {
+        color: gray;
+        font-weight: normal;
+        margin-left: 3px;
+    }
+
+.pvtCheckContainer {
+    text-align: left;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow-y: scroll;
+    width: 100%;
+    max-height: 250px;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
+}
+
+    .pvtCheckContainer p {
+        margin: 5px;
+    }
+
+.pvtRenderer, .pvtAttrDropdown {
+    max-width: 150px;
+}
+
+.pvtRenderer, .pvtAttrDropdown, .pvtAggregator {
+    padding: 0.1rem 0.1rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    -webkit-transition: border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+}
+
+.pvtRendererArea {
+    padding: 5px;
+}

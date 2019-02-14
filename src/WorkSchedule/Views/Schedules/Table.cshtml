@@ -1,0 +1,503 @@
+﻿@model WorkSchedule.ViewModels.ScheduleList
+
+@{
+    ViewBag.Title = "Table";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Work Schedule - Table view</h2>
+
+<div name="contentData" id="contentData">
+    <div class="panel">
+        <div class="row vcenter vcenter-margin">
+            <div class="col-md-5">
+                <p>@Html.ActionLink("Create a new", "Create2")</p>
+            </div>
+            <div class="col-md-5">
+                <p>@Html.ActionLink("Mass import", "ExcelImport")</p>
+            </div>
+            <div class="col-md-2">
+                <p>@Html.ActionLink("Calendar view", "Index")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="row vcenter vcenter-margin">
+            <input type="text" id="timeKey" class="form-control date-picker text-box" autocomplete="off" />
+            <select class="form-control" name="FormOfEmployment" id="FormOfEmployment">
+                <option value="all">Wszyscy</option>
+                <option value="Mother co">Mother co</option>
+                <option value="APT">APT</option>
+                <option value="Other">GALLUP</option>
+            </select>
+        </div>
+        <br>
+
+        <div class="table-scroll">
+
+            <table class="table table-sm table-bordered" id="scheduleList">
+                <thead>
+                    <tr>
+                        <th>
+                            Zespół
+                        </th>
+                        <th>
+                            Nazwisko
+                        </th>
+                        <th>
+                            Suma
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (var i = 0; i < Model.Person.Count(); i++)
+                    {
+                        <tr>
+                            <td>
+                                @if (Model.Person[i].DictTeam != null)
+                                {
+                                    @Model.Person[i].DictTeam.Name
+                                }
+                                <input type="hidden" name="Date_to" value=" @String.Format("{0:yyyy-MM-dd HH:mm}",  Model.Person[i].DateTo) " />
+                            </td>
+                            <td>
+                                @Model.Person[i].FullName
+                            </td>
+                            <td>
+                                0
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="table-scroll">
+            <table class="table table-sm table-bordered" id="scheduleListDay">
+                <thead>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="calendarModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 id="modalTitle" class="modal-title"></h4>
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span> <span class="sr-only">close</span></button>
+                    </div>
+                    <div id="modalBody" class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+
+        function daysInMonth(month, year) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        function clickCell() {
+            var event = arguments[4].split("|");
+            $('#modalTitle').html(event[1]);
+            var body = "";
+            for (var i = 0; i < event.length - 1; i += 7) {
+                var description = (!event[i + 4] || event[i + 4] == "null") ? "" : event[i + 4];
+                var note = (!event[i + 5] || event[i + 5] == "null") ? "" : event[i + 5];
+                body += 'Date: ' + event[i + 2]
+                    + ' - ' + event[i + 3]
+                    + '<br><br>Status: <b>' + description
+                    + '</b><br><br>Note: ' + note
+                    + '<br><br><a href="/Schedules/Edit/' + event[i + 0] + '">Edit</a><hr>'
+
+            }
+
+            $('#modalBody').html(body);
+            $('#calendarModal').modal('show');
+        }
+        function clickCellGroup() {
+            var table = document.getElementById("scheduleListDay");
+            var timekey = table.tHead.rows[0].cells[0].innerHTML.substring(0, 10);
+            var event = arguments[4].split("|");
+            $('#modalTitle').html(timekey);
+            var body = "";
+            for (var i = 0; i < event.length - 1; i += 7) {
+                var description = (!event[i + 4] || event[i + 4] == "null") ? "" : event[i + 4];
+                var note = (!event[i + 5] || event[i + 5] == "null") ? "" : event[i + 5];
+                body += 'Person: ' + event[i + 1]
+                    + '<br><br>Date: ' + event[i + 2]
+                    + ' - ' + event[i + 3]
+                    + '<br><br>Status: <b>' + description
+                    + '</b><br><br>Note: ' + note
+                    + '<br><br><a href="/Schedules/Edit/' + event[i + 0] + '">Edit</a><hr>'
+
+            }
+
+            $('#modalBody').html(body);
+            $('#calendarModal').modal('show');
+        }
+
+        // day table
+        function clickTh(timeKey_day) {
+            var table = document.getElementById("scheduleListDay");
+            var thead = table.tHead, tbody = table.tBodies[0];
+            var scheduleStatus = [];
+
+            //clear
+            var timeKey_dayLong = (timeKey_day < 10) ? "0" + timeKey_day : timeKey_day;
+            thead.innerHTML = "<th>" + $("#timeKey").val() + "-" + timeKey_dayLong + "<br>Hour</th>";
+            tbody.innerHTML = "";
+            for (var i = 6; i < 22; i++) {
+                var newRow = tbody.insertRow(tbody.rows.length);
+                var newCell = newRow.insertCell(0);
+                newCell.id = i;
+                var newText = document.createTextNode(i + ':00');
+                newCell.appendChild(newText);
+            }
+            var timeKey_select = $("#timeKey").val();
+            // adding Events to table
+            $.ajax({
+                url: '/Schedules/GetDiaryEventsTimeKey',
+                dataType: "json",
+                type: "GET",
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                data: "timeKey_select=" + timeKey_select,
+                success: function (data) {
+
+                    var timeKey_select = $("#timeKey").val();
+                    var timeKey_month = timeKey_select.substring(7 - 2);
+                    var timeKey_year = timeKey_select.substring(0, 4);
+                    var timeKey_selectData = moment().date(timeKey_day).month(timeKey_month - 1).year(timeKey_year);
+                    var row = table.tBodies[0].rows;
+                    for (var i = 0; i < row.length; i++) {
+                        var timeKey_selectDataHour = moment(timeKey_selectData).set({ hour: row[i].cells[0].id, minute: 0, second: 0, millisecond: 0 });
+                        var timeKey_selectDataHourTo = moment(timeKey_selectData).set({ hour: parseInt(row[i].cells[0].id) + 1, minute: 0, second: 0, millisecond: 0 });
+                        for (var k = 0; k < data.length; k++) {
+
+                            if (scheduleStatus.indexOf(data[k].description) > -1) {
+                                var column = scheduleStatus.indexOf(data[k].description) + 1;
+                                var x = (row[i].cells[column]) ? row[i].cells[column] : row[i].insertCell(-1);
+                            }
+                            else {
+                                var x = row[i].insertCell(-1);
+                                scheduleStatus.push(data[k].description);
+                                var xTh = thead.rows[0].insertCell(-1);
+                                xTh.innerHTML = data[k].description;
+                            }
+                            var durationToStart = moment.duration(timeKey_selectDataHourTo.diff(moment(data[k].start))).asHours();
+                            var durationToEnd = moment.duration(moment(data[k].end).diff(timeKey_selectDataHour)).asHours();
+                            if (
+                                (moment(data[k].start) <= timeKey_selectDataHour || (0 < durationToStart && durationToStart < 1 && moment(data[k].start) <= timeKey_selectDataHourTo))
+                                && timeKey_selectDataHour < moment(data[k].end)
+                            ) {
+                                var div = document.createElement("div");
+                                var duration = (0 < durationToStart && durationToStart < 1) ? durationToStart : (0 < durationToEnd && durationToEnd < 1) ? durationToEnd : 1;
+                                if (x.hasChildNodes()) {
+                                    div.innerHTML = (((x.hasChildNodes()) ? parseFloat(x.children[0].innerHTML) : 0) + duration).toFixed(2);
+                                    x.innerHTML = "";
+                                }
+                                else {
+                                    div.innerHTML = duration.toFixed(2);
+                                }
+                                div.setAttribute("style", 'background-color: ' + data[k].color + '; flex: 1 0 auto; display: flex; align-items: center; justify-content: center; width: 100%;');
+                                x.id += data[k].id
+                                    + '|' + data[k].title
+                                    + '|' + moment(data[k].start).format('YYYY-MM-DD HH:mm')
+                                    + '|' + moment(data[k].end).format('YYYY-MM-DD HH:mm')
+                                    + '|' + data[k].description
+                                    + '|' + data[k].note
+                                    + '|' + data[k].hours.toFixed(2) + '|';
+                                x.appendChild(div);
+                                x.onclick = function () {
+                                    clickCellGroup(this.cellIndex, this.parentElement.rowIndex, this.innerHTML, this.title, this.id);
+                                };
+                            }
+
+                        }
+
+                    }
+                }
+            });
+
+        }
+
+        function loadTable() {
+
+            var table = document.getElementById("scheduleList");
+            var thead = table.tHead, tbody = table.tBodies[0];
+            var colsLen = tbody.rows[0].cells.length, rowsLen = tbody.rows.length;
+
+            //clean table
+            for (var j = 3; j < colsLen; ++j) {
+                for (var i = 0; i < rowsLen; ++i) {
+                    if (tbody.rows[i].cells.length > 3) {
+                        tbody.rows[i].deleteCell(3);
+                    }
+                    else {
+                        tbody.rows[i].deleteCell(1);
+                    }
+
+                }
+                thead.rows[0].deleteCell(3);
+            }
+
+            if (tbody.rows[tbody.rows.length - 4].cells[0].innerHTML != 'Suma godzin') {
+                var newRow = tbody.insertRow(tbody.rows.length);
+                newRow.style.fontWeight = 'bold';
+                var newCell = newRow.insertCell(0);
+                var newText = document.createTextNode('Suma godzin');
+                newCell.appendChild(newText);
+                newCell.setAttribute('colspan', 3);
+
+                var newRow = tbody.insertRow(tbody.rows.length);
+                newRow.style.fontWeight = 'bold';
+                var newCell = newRow.insertCell(0);
+                var newText = document.createTextNode('Suma osób');
+                newCell.appendChild(newText);
+                newCell.setAttribute('colspan', 3);
+
+                var newRow = tbody.insertRow(tbody.rows.length);
+                newRow.style.fontWeight = 'bold';
+                var newCell = newRow.insertCell(0);
+                var newText = document.createTextNode('Suma godzin "Obsługa"');
+                newCell.appendChild(newText);
+                newCell.setAttribute('colspan', 3);
+
+                var newRow = tbody.insertRow(tbody.rows.length);
+                newRow.style.fontWeight = 'bold';
+                var newCell = newRow.insertCell(0);
+                var newText = document.createTextNode('Suma osób "Obsługa"');
+                newCell.appendChild(newText);
+                newCell.setAttribute('colspan', 3);
+            }
+
+            var timeKey_select = $("#timeKey").val();
+            var timeKey_month = timeKey_select.substring(7 - 2);
+            var timeKey_year = timeKey_select.substring(0, 4);
+            for (var i = 1; i <= daysInMonth(timeKey_month, timeKey_year); i++) {
+                var weekday = moment().date(i).month(timeKey_month - 1).year(timeKey_year).isoWeekday();
+                if (weekday == 7) {
+                    $("#scheduleList thead tr").append('<th style="background-color: #FFF2F2;" onClick="clickTh(' + i + ')">' + i + '</th>');
+                }
+                else {
+                    $("#scheduleList thead tr").append('<th onClick="clickTh(' + i + ')">' + i + '</th>');
+                }
+
+            }
+
+            if (!Array.prototype.filter) {
+                Array.prototype.filter = function (fun /*, thisp*/) {
+                    var len = this.length >>> 0;
+                    if (typeof fun != "function")
+                        throw new TypeError();
+
+                    var res = [];
+                    var thisp = arguments[1];
+                    for (var i = 0; i < len; i++) {
+                        if (i in this) {
+                            var val = this[i];
+                            if (fun.call(thisp, val, i, this))
+                                res.push(val);
+                        }
+                    }
+                    return res;
+                };
+            }
+
+            // adding Events to table
+            $.ajax({
+                url: '/Schedules/GetDiaryEventsTimeKey',
+                dataType: "json",
+                type: "GET",
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                data: "timeKey_select=" + timeKey_select,
+                success: function (data) {
+
+                    var table = document.getElementById("scheduleList");
+                    var timeKey_select = $("#timeKey").val();
+                    var timeKey_month = timeKey_select.substring(7 - 2);
+                    var timeKey_year = timeKey_select.substring(0, 4);
+                    var row = table.tBodies[0].rows;
+                    var sum_hours_col = [];
+                    var sum_people_col = [];
+                    var sum_hours_core_col = [];
+                    var sum_people_core_col = [];
+                    for (var i = 0; i < (row.length - 4); i++) {
+                        var name = row[i].cells[1].innerHTML.trim();
+
+                        var sum_hours = 0;
+                        for (var j = 1; j <= daysInMonth(timeKey_month, timeKey_year); j++) {
+                            var x = row[i].insertCell(-1);
+                            var changeNameAndDay = 0;
+                            var timeKey_selectData = moment().date(j).month(timeKey_month - 1).year(timeKey_year);
+                            var weekday = timeKey_selectData.isoWeekday();
+                            if (weekday == 7)
+                                x.setAttribute("style", 'background-color: #FFF2F2');
+
+                            var dataName = data.filter(function (el) {
+                                return el.title == name;
+                            });
+                            for (var k = 0; k < dataName.length; k++) {
+
+                                if (dataName[k].allDay == true) {
+
+                                    if (moment(dataName[k].start) <= timeKey_selectData && timeKey_selectData <= moment(dataName[k].end) && dataName[k].title == name) {
+                                        var div = document.createElement("div");
+                                        div.innerHTML = dataName[k].description.substring(0, 1);
+                                        div.setAttribute("style", 'background-color: ' + dataName[k].color + '; flex: 1 0 auto; display: flex; align-items: center; justify-content: center; width: 100%;');
+                                        div.title += dataName[k].description + ': ' + moment(dataName[k].start).format('HH:mm') + " - " + moment(dataName[k].end).format('HH:mm') + '\n';
+                                        x.id += dataName[k].id
+                                            + '|' + dataName[k].title
+                                            + '|' + moment(dataName[k].start).format('YYYY-MM-DD HH:mm')
+                                            + '|' + moment(dataName[k].end).format('YYYY-MM-DD HH:mm')
+                                            + '|' + dataName[k].description
+                                            + '|' + dataName[k].note
+                                            + '|' + dataName[k].hours + '|';
+                                        x.appendChild(div);
+                                        sum_hours += dataName[k].hours;
+                                        sum_hours_col[j] = (typeof sum_hours_col[j] == 'undefined') ? dataName[k].hours : sum_hours_col[j] + dataName[k].hours;
+                                        sum_hours_core_col[j] = (dataName[k].description == 'Obsługa') ? ((typeof sum_hours_core_col[j] == 'undefined') ? dataName[k].hours : sum_hours_core_col[j] + dataName[k].hours) : sum_hours_core_col[j];
+                                        if (changeNameAndDay == 0) {
+                                            sum_people_col[j] = (typeof sum_people_col[j] == 'undefined') ? 1 : sum_people_col[j] + 1;
+                                            sum_people_core_col[j] = (dataName[k].description == 'Obsługa') ? ((typeof sum_people_core_col[j] == 'undefined') ? 1 : sum_people_core_col[j] + 1) : sum_people_core_col[j];
+                                            changeNameAndDay = 1;
+                                        }
+                                    }
+                                }
+                                else {
+                                    var timekey = moment(dataName[k].start).format('YYYY-MM');
+                                    if (timekey == timeKey_select && parseInt(moment(dataName[k].start).format('DD')) == j && dataName[k].title == name) {
+                                        var div = document.createElement("div");
+                                        div.innerHTML = dataName[k].description.substring(0, 1);
+                                        div.setAttribute("style", 'background-color: ' + dataName[k].color + '; flex: 1 0 auto; display: flex; align-items: center; justify-content: center; width: 100%;');
+                                        div.title += dataName[k].description + ': ' + moment(dataName[k].start).format('HH:mm') + " - " + moment(dataName[k].end).format('HH:mm') + '\n';
+                                        x.id += dataName[k].id
+                                            + '|' + dataName[k].title
+                                            + '|' + moment(dataName[k].start).format('YYYY-MM-DD HH:mm')
+                                            + '|' + moment(dataName[k].end).format('YYYY-MM-DD HH:mm')
+                                            + '|' + dataName[k].description
+                                            + '|' + dataName[k].note
+                                            + '|' + dataName[k].hours + '|';
+                                        x.appendChild(div);
+                                        sum_hours += dataName[k].hours;
+                                        sum_hours_col[j] = (typeof sum_hours_col[j] == 'undefined') ? dataName[k].hours : sum_hours_col[j] + dataName[k].hours;
+                                        sum_hours_core_col[j] = (dataName[k].description == 'Obsługa') ? ((typeof sum_hours_core_col[j] == 'undefined') ? dataName[k].hours : sum_hours_core_col[j] + dataName[k].hours) : sum_hours_core_col[j];
+                                        if (changeNameAndDay == 0) {
+                                            sum_people_col[j] = (typeof sum_people_col[j] == 'undefined') ? 1 : sum_people_col[j] + 1;
+                                            sum_people_core_col[j] = (dataName[k].description == 'Obsługa') ? ((typeof sum_people_core_col[j] == 'undefined') ? 1 : sum_people_core_col[j] + 1) : sum_people_core_col[j];
+                                            changeNameAndDay = 1;
+                                        }
+                                    }
+
+                                }
+
+                            }
+                            x.innerHTML = '<div class="fullheight">' + x.innerHTML + '</div>';
+                            row[i].cells[2].innerHTML = sum_hours.toFixed(1);
+
+                            x.onclick = function () {
+                                clickCell(this.cellIndex, this.parentElement.rowIndex, this.innerHTML, this.title, this.id);
+                            };
+                        }
+                    }
+
+                    // delete employe with ended job
+                    for (var i = 0; i < (row.length - 4); i++) {
+                        var name_date_to = row[i].cells[0].innerHTML.trim();
+                        var name_date_to_date = new Date(name_date_to.substring(name_date_to.indexOf(" value=") + 8).substring(0, 10));
+                        table.tBodies[0].rows[i].style.display = '';
+                        if (moment(name_date_to_date) < moment().date(1).month(timeKey_month - 1).year(timeKey_year)) {
+                            table.tBodies[0].rows[i].style.display = 'none';
+                        }
+                    }
+
+                    for (var j = 1; j <= daysInMonth(timeKey_month, timeKey_year); j++) {
+                        var x = row[row.length - 4].insertCell(-1);
+                        var x2 = row[row.length - 3].insertCell(-1);
+                        var x3 = row[row.length - 2].insertCell(-1);
+                        var x4 = row[row.length - 1].insertCell(-1);
+                        var timeKey_selectData = moment().date(j).month(timeKey_month - 1).year(timeKey_year);
+                        var weekday = timeKey_selectData.isoWeekday();
+                        if (weekday == 7) {
+                            x.setAttribute("style", 'background-color: #FFF2F2');
+                            x2.setAttribute("style", 'background-color: #FFF2F2');
+                            x3.setAttribute("style", 'background-color: #FFF2F2');
+                            x4.setAttribute("style", 'background-color: #FFF2F2');
+                        }
+
+                        x.innerHTML = (typeof sum_hours_col[j] == 'undefined') ? 0 : sum_hours_col[j].toFixed(0);
+                        x2.innerHTML = (typeof sum_people_col[j] == 'undefined') ? 0 : sum_people_col[j].toFixed(0);
+                        x3.innerHTML = (typeof sum_hours_core_col[j] == 'undefined') ? 0 : sum_hours_core_col[j].toFixed(0);
+                        x4.innerHTML = (typeof sum_people_core_col[j] == 'undefined') ? 0 : sum_people_core_col[j].toFixed(0);
+                    }
+                }
+            });
+
+        }
+
+        function onPageLoad() {
+
+            // disable stickyHeaders when browser is IE
+            if (navigator.appName == 'Microsoft Internet Explorer' || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv:11/)) || (typeof $.browser !== "undefined" && $.browser.msie == 1)) {
+            }
+            else {
+                $("table").stickyTableHeaders();
+            }
+
+            $("#FormOfEmployment").change(function () {
+                var selectedValue = this.value;
+                $.ajax({
+                    url: '/Schedules/Table',
+                    type: "POST",
+                    data: { formOfEmployment: $('#FormOfEmployment').val() },
+                    success: function (data) {
+                        var pageHTML = document.createElement('html');
+                        pageHTML.innerHTML = data;
+                        var content = pageHTML.getElementsByTagName("BODY")[0].children[1].children[1];
+                        $('#contentData').html(content);
+                        $('#FormOfEmployment').val(selectedValue);
+                        onPageLoad();
+                    }
+                });
+            });
+
+            $('.date-picker').datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: "yy-mm",
+                showButtonPanel: true,
+                onChangeMonthYear: function (year, month, inst) {
+                    $(this).val($.datepicker.formatDate('yy-mm', new Date(year, month - 1, 1)));
+                },
+                onClose: function (dateText, inst) {
+                    var month = $(".ui-datepicker-month :selected").val();
+                    var year = $(".ui-datepicker-year :selected").val();
+                    $(this).val($.datepicker.formatDate('yy-mm', new Date(year, month, 1)));
+                    loadTable();
+                    document.getElementById("scheduleListDay").tHead.innerHTML = "";
+                    document.getElementById("scheduleListDay").tBodies[0].innerHTML = "";
+                }
+            }).focus(function () {
+                $(".ui-datepicker-calendar").hide();
+            });
+            $('.date-picker').datepicker('setDate', new Date());
+
+            loadTable();
+        }
+
+        $(document).ready(function () {
+            onPageLoad();
+
+        });
+    </script>
+}

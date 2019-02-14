@@ -1,0 +1,43 @@
+﻿@model WorkSchedule.Models.DictTeam
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>DictTeam</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DictDepartment.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DictDepartment.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DictTeamForeignID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DictTeamForeignID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.DictTeamID }) |
+    @Html.ActionLink("Back to the list", "Index")
+</p>
