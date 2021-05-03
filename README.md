@@ -29,7 +29,9 @@ We have set up a live online demo for you so you are able to test WorkScheduleNE
 ## How to install
 
 * Download the latest stable release from the "src" tab and unzip it to your web folder
-* Create database and tables
+* Create database and tables (from CREATE DATABASE AND TABLES.sql file or you can use EF and create migration)
+* In web.config file change your connection string to database (line 32) (replace YOURDATABASE and YOURSERVER)
+* You can adapt code to your organisation and your requirements
 * Setup a website in IIS and point the file directory to your unzipped folder
 * Fire up your browser
 * Enjoy ;-)
